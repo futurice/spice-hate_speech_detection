@@ -2,7 +2,6 @@
 Automatic hate speech recognition
 
 ## TODO
-0. Clean passwords, API-keys etc from the repository!
 1. Try Naive Bayes-classifier with BoW
 2. CNN on Embedding Matrix (c.f Willi)
 3. Stemmings, stop words for BoW
