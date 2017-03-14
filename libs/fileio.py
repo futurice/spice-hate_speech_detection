@@ -1,0 +1,30 @@
+import sys
+sys.path.append('confs/')
+sys.path.append('libs/')
+
+
+def dump_tweets_to_file(filename='data/tweets.txt'):
+    import database
+
+    db = database.HateBase()
+    db.get_tweets()
+    tweets = db.get_tweets()
+    with open(filename, 'w') as f:
+        for tweet in tweets:
+            f.write(tweet.replace('\n',' ') + '\n')
+
+def read_fasttext_train_file(filename):
+    classes = ['__label__OK', '__label__vihapuhetta']
+    class_ids = []
+    msgs = []
+    with open(filename, 'r') as f:
+        for i, line in enumerate(f):
+            tokens = line.split(' ')
+            class_name = tokens[0]
+            msg = ' '.join(tokens[1:])
+            # define class_id
+            if classes.count(class_name) == 0:
+                classes.append(class_name)
+            class_ids.append(classes.index(class_name))
+            msgs.append(msg)
+    return class_ids, msgs, classes
