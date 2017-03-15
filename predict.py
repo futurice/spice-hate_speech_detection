@@ -8,6 +8,7 @@ This script predicts/detects hate speech for new messages
 import sys
 import argparse
 import os
+import glob
 
 import numpy as np
 import pandas as pd
@@ -26,8 +27,9 @@ import classification
 def main(argv):
     # Parse inputs
     parser = argparse.ArgumentParser()
-    parser.add_argument('input', help='Input')
-    parser.add_argument('--output', help='Output', default='predictions.csv')
+    parser.add_argument('inputdir', help='Input directory')
+    #parser.add_argument('--output', help='Output', default='predictions.csv')
+    parser.add_argument('--outdir', help='Directory to store data', default='data/output')
     parser.add_argument('feature', help='Feature extraction file')
     parser.add_argument('predictor', help='Predictor file')
 
@@ -43,28 +45,31 @@ def main(argv):
     # Load the preditor model
     clf = joblib.load(args.predictor)
 
-    # Load new messages
-    df = pd.read_csv(args.input)
-    messages = df.text.tolist()
+    filenames = glob.glob(os.path.join(args.inputdir, '*.csv'))
+    for filename in filenames:
+        # Load new messages
+        df = pd.read_csv(filename) #args.input)
+        messages = df.text.tolist()
 
-    # Extract features
-    print('Extracting text features from new data')
-    x = feature_extractor.extract(messages)
+        # Extract features
+        print('Extracting text features from new data')
+        x = feature_extractor.extract(messages)
 
-    # predict hate speech messages
-    print('Predicting hate speech messages..')
-    pred = clf.predict(x)
-    score = clf.predict_proba(x)[:,1]
+        # predict hate speech messages
+        print('Predicting hate speech messages..')
+        pred = clf.predict(x)
+        score = clf.predict_proba(x)[:,1]
 
-    # Update dataframe
-    df['predicted_label'] = pred
-    df['prediced_score'] = score
+        # Update dataframe
+        df['predicted_label'] = pred
+        df['prediced_score'] = score
 
-    # Store result
-    if (len(os.path.dirname(args.output)) > 0) and (not os.path.exists(os.path.dirname(args.output))):
-        os.makedirs(os.path.dirname(args.output))
-    print('Storing results to %s' % args.output)
-    df.to_csv(args.output)
+        # Store result
+        outputfile = os.path.join(args.outdir, os.path.basename(filename))
+        if (len(os.path.dirname(outputfile)) > 0) and (not os.path.exists(os.path.dirname(outputfile))):
+            os.makedirs(os.path.dirname(outputfile))
+        print('Storing results to %s' % outputfile)
+        df.to_csv(outputfile)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
