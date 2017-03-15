@@ -33,10 +33,10 @@ def main(argv):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='Input')
-    parser.add_argument('--output', help='Output', default='predictions.csv')
-    parser.add_argument('feature', help='Feature extraction file')
-    parser.add_argument('feature_method', help='Feature extraction method', default='fasttext')
-    parser.add_argument('classifier', help='Predictor file')
+    parser.add_argument('--outputdir', help='Output directory', required=True)
+    parser.add_argument('--featurename', help='Feature extraction name', required=True)
+    parser.add_argument('--featurefile', help='Feature extraction file', required=True)
+    parser.add_argument('--classifier', help='Predictor file', required=True)
 
     args = parser.parse_args(argv)
 
@@ -52,8 +52,8 @@ def main(argv):
     #TODO: We need to have BoW Features here too..
     # Load FastText textfeatures
     print('Loading text feature extractor')
-    feature_extractor = textfeatures.FeatureExtractor(method=args.feature_method,
-                                                      filename=args.feature)
+    feature_extractor = textfeatures.FeatureExtractor(method=args.featurename,
+                                                      filename=args.featurefile)
 
 
     # Extract text features from training data
@@ -71,7 +71,7 @@ def main(argv):
 
     # Save the model
     #TODO: The name of the file should be also depend on the method
-    predictor_model_file = os.path.join('data', 'models', args.feature_method +
+    predictor_model_file = os.path.join(args.outputdi, args.featurename +
                                         '_' + args.classifier + '.pkl')
     if os.path.exists(os.path.dirname(predictor_model_file)) == False:
         os.makedirs(os.path.dirname(predictor_model_file))

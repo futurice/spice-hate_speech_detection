@@ -27,20 +27,22 @@ import classification
 def main(argv):
     # Parse inputs
     parser = argparse.ArgumentParser()
-    parser.add_argument('inputdir', help='Input directory')
+    parser.add_argument('--inputdir', help='Input directory', required=True)
     #parser.add_argument('--output', help='Output', default='predictions.csv')
-    parser.add_argument('--outdir', help='Directory to store data', default='data/output')
-    parser.add_argument('feature', help='Feature extraction file')
-    parser.add_argument('predictor', help='Predictor file')
+    parser.add_argument('--outdir', help='Directory to store data', default='data/output', required=True)
+    parser.add_argument('--featurename', help='Feature extraction name', required=True)
+    parser.add_argument('--featurefile', help='Feature extraction file', required=True)
+    parser.add_argument('--predictor', help='Predictor file', required=True)
 
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv[1:])
 
     print('Inputs:')
     print(args)
 
     # Load FastText textfeatures
     print('Loading text feature extractor')
-    feature_extractor = textfeatures.FeatureExtractor(method='fasttext', filename=args.feature)
+    feature_extractor = textfeatures.FeatureExtractor(method=args.featurename,
+                                                      filename=args.featurefile)
 
     # Load the preditor model
     clf = joblib.load(args.predictor)
@@ -72,4 +74,4 @@ def main(argv):
         df.to_csv(outputfile)
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main(sys.argv)
