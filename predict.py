@@ -23,35 +23,48 @@ import textfeatures
 import fileio
 import classification
 
-# TODO: These should be defined in confs or come from settings ..
-fasttext_textfeature_file = 'data/train/annotated_fb_messages.txt'
-predictor_model_file = 'data/models/fasttext_rf.pkl'
-outfile = 'data/prediction_results.csv'
+def main(argv):
+    # Parse inputs
+    parser = argparse.ArgumentParser()
+    parser.add_argument('input', help='Input')
+    parser.add_argument('--output', help='Output', default='predictions.csv')
+    parser.add_argument('feature', help='Feature extraction file')
+    parser.add_argument('predictor', help='Predictor file')
 
-# Load FastText textfeatures
-print('Loading text feature extractor')
-text_model = fasttext.load_model('data/tweets_skipgram.bin')
+    args = parser.parse_args(argv)
 
-# Load the preditor model
-clf = joblib.load(predictor_model_file)
+    print('Inputs:')
+    print(args)
 
-# Load new messages
-df = pd.read_csv('data/incoming.csv')
-messages = df.text.tolist()
+    # Load FastText textfeatures
+    print('Loading text feature extractor')
+    feature_extractor = textfeatures.FeatureExtractor(method='fasttext', filename=args.feature)
 
-# Extract features
-print('Extracting text features from new data')
-x = textfeatures.fasttext_bag_of_means(messages, text_model)
+    # Load the preditor model
+    clf = joblib.load(args.predictor)
 
-# predict hate speech messages
-print('Predicting hate speech messages..')
-pred =clf.predict(x)
-score = clf.predict_proba(x)[:,1]
+    # Load new messages
+    df = pd.read_csv(args.input)
+    messages = df.text.tolist()
 
-# Update dataframe
-df['predicted_label'] = pred
-df['prediced_score'] = score
+    # Extract features
+    print('Extracting text features from new data')
+    x = feature_extractor.extract(messages)
 
-# Store result
-print('Storing results to %s' % outfile)
-df.to_csv(outfile)
+    # predict hate speech messages
+    print('Predicting hate speech messages..')
+    pred = clf.predict(x)
+    score = clf.predict_proba(x)[:,1]
+
+    # Update dataframe
+    df['predicted_label'] = pred
+    df['prediced_score'] = score
+
+    # Store result
+    if (len(os.path.dirname(args.output)) > 0) and (not os.path.exists(os.path.dirname(args.output))):
+        os.makedirs(os.path.dirname(args.output))
+    print('Storing results to %s' % args.output)
+    df.to_csv(args.output)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
