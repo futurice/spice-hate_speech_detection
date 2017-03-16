@@ -71,7 +71,7 @@ def main(argv):
 
     # Save the model
     #TODO: The name of the file should be also depend on the method
-    predictor_model_file = os.path.join(args.outputdi, args.featurename +
+    predictor_model_file = os.path.join(args.outputdir, args.featurename +
                                         '_' + args.classifier + '.pkl')
     if os.path.exists(os.path.dirname(predictor_model_file)) == False:
         os.makedirs(os.path.dirname(predictor_model_file))
