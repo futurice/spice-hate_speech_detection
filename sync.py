@@ -15,7 +15,8 @@ import googlesheets
 
 def main(argv):
     parser = argparse.ArgumentParser()
-    parser.add_argument('inputdir', help='Input directory to sync with Google Drive')
+    parser.add_argument('--inputdir', help='Input directory to sync with Google Drive', required=True)
+    parser.add_argument('--force', help='Force syncing to Google Drive', default=False)
     args = parser.parse_args(argv)
 
     #
@@ -23,7 +24,6 @@ def main(argv):
 
     # Get a list of sheets in Google Drive
     spreadsheets = gc.openall()
-    print(spreadsheets)
 
     # Keep a list of sheets in Google Drive so we dont upload a new document
     # over the old one
@@ -43,7 +43,11 @@ def main(argv):
         basename = os.path.basename(filename)
 
         # If the file is not synced yet, then upload a new file
-        if synced_sheets.count(basename) == 0:
+        if (synced_sheets.count(basename) == 0) or args.force:
+            
+            if (synced_sheets.count(basename) == 1) and args.force:
+                print('Force syncing %s' % filename)
+
             # Create a new sheet
             sh = gc.create(basename)
             # Import new data from CSV
