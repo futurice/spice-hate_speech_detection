@@ -46,7 +46,7 @@ def stemming_message_snowball(message, stemmings_to_words=dict()):
 
     for word in casual_tokenize(message):
 
-        stemmed_word = stemmer.stem(word)
+        stemmed_word = stemmer.stem(word.lower())
         stemmed_message.append(stemmed_word)
         stemmings_to_words[stemmed_word] = word
 
