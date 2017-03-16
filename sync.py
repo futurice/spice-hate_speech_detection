@@ -25,6 +25,8 @@ def main(argv):
     # Get a list of sheets in Google Drive
     spreadsheets = gc.openall()
 
+    print('%d sheets in Google drive to be synced' % len(spreadsheets))
+
     # Keep a list of sheets in Google Drive so we dont upload a new document
     # over the old one
     synced_sheets = []
@@ -44,7 +46,7 @@ def main(argv):
 
         # If the file is not synced yet, then upload a new file
         if (synced_sheets.count(basename) == 0) or args.force:
-            
+
             if (synced_sheets.count(basename) == 1) and args.force:
                 print('Force syncing %s' % filename)
 
