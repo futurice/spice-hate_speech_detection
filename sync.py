@@ -49,15 +49,16 @@ def main(argv):
 
             if (synced_sheets.count(basename) == 1) and args.force:
                 print('Force syncing %s' % filename)
+                sh = gc.open(basename)
+            else:
+                # Create a new sheet
+                sh = gc.create(basename)
 
-            # Create a new sheet
-            sh = gc.create(basename)
             # Import new data from CSV
             gc.import_csv(sh.id, open(filename, 'r').read())
             # Share the document to get access to it
             sh.share('teemu.kinnunen@futurice.com', perm_type='user', role='writer')
             # Add a new column and name it to hatespeech_label
-            #sh.sheet1.update_cell(1, sh.sheet1.col_count, 'hatespeech_label')
             headers = sh.sheet1.row_values(1)
             sh.sheet1.update_cell(1, headers.index('prediced_score') + 2,
                                   'hatespeech_label')
