@@ -13,6 +13,8 @@ from calendar import monthrange
 import os
 import csv
 import json
+import bs4
+import dateparser
 
 import pandas as pd
 
@@ -20,6 +22,8 @@ sys.path.append('confs')
 import hiit_collector
 
 def fetch_data(username, password, hostname, paths, startdate, enddate):
+
+    ## twitter data collection
 
     data = ''
 
@@ -52,16 +56,57 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
     data = csv.DictReader( StringIO( data ) )
     data = list( data )
 
-    data_cleaned = []
+    data_cleaned_twitter = []
     for d in data:
-        data_cleaned.append( {
+        data_cleaned_twitter.append( {
             'source' : 'twitter',
             'id' : d['\ufeffid'],
             'text' : d['text'],
             'created_at' : d['created_at']
         } )
 
-    return data_cleaned
+    ## facebook data collection
+
+    url = 'http://' + username + ':' + password + '@' + hostname + '/vaalitfb/'
+
+    r = requests.get( url )
+    soup = bs4.BeautifulSoup( r.text,  'html5lib' )
+
+    data = []
+
+    ## update dates to datetim
+    startdate = dateparser.parse( startdate )
+    enddate = dateparser.parse( enddate )
+
+    ## todo: add time filtering
+    for f in soup.find_all('a'):
+        f = f['href']
+
+        if f.endswith('.json') and '_' not in f:
+            try:
+                r = requests.get( url + f )
+                r = r.json()
+                r = r['feed']
+                ## limit to selected dates
+                r = filter( lambda x: startdate <= parser.dateparser( d['created_time'] ) <= enddate, r )
+                data += r
+            except:
+                print("Failed with", f)
+
+    data_cleaned_fb = []
+
+    for d in data:
+        msg = ''
+        if 'message' in d:
+            msg = d['message']
+        data_cleaned_fb.append({
+            'source' : 'facebook',
+            'id' : d['id'],
+            'text' : msg, ## xxx? potentially breaks
+            'created_at' : d['created_time']
+        })
+
+    return data_cleaned_twitter + data_cleaned_fb
 
 def store_messages(cvsstr, filename):
 
