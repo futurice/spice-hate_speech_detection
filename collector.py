@@ -11,6 +11,7 @@ from io import StringIO
 import datetime
 from calendar import monthrange
 import os
+import csv
 
 import pandas as pd
 
@@ -44,6 +45,13 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
                                    'enddate' : enddate,
                                    'bin' : path[1] } )
         data += '\n'.join(r.text.split('\n')[1:])
+
+
+    data = csv.DictReader( StringIO.StringIO( data ) )
+
+    keys = ['text', 'id', 'time']
+
+    print( data[0] )
 
     return data
 
