@@ -11,22 +11,34 @@ from io import StringIO
 import datetime
 from calendar import monthrange
 import os
+import json
 
 import pandas as pd
 
 sys.path.append('confs')
 import hiit_collector
 
-def fetch_data(username, password, hostname, startdate, enddate):
+def fetch_data(api_key, startdate, enddate):
 
-    url = 'http://' + username + ':' + password + '@' + hostname + '/tcat/api/querybin.php'
-    r = requests.get(url,
-                     params = {'resource': 'querybin/tweets',
-                               'action' : 'tweet-export',
-                               'startdate' : startdate,
-                               'enddate' : enddate,
-                               'bin' : 'Kuntavaalit' } )
-    return r.text
+    data = []
+
+    for candidate in ['NikoHat', 'matnel']:
+
+        params = {
+            'api_search[query]' : 'type:twitter_tweet AND author:' + candidate,
+            'api_key' : api_key
+        }
+
+        url = 'https://api.futusome.com/api/searches.json'
+
+        r = requests.get(url, params )
+
+        data += r.json()['documents']
+
+    ## formulate back into CSV type of format
+    data = map( lambda entry: entry['fields'] , data )
+
+    return list( data )
 
 def store_messages(cvsstr, filename):
 
@@ -38,9 +50,7 @@ def store_messages(cvsstr, filename):
 def main(argv):
     # Parse inputs
     parser = argparse.ArgumentParser()
-    parser.add_argument('--user', help='Username')
-    parser.add_argument('--password', help='Password')
-    parser.add_argument('--hostname', help='Hostname')
+    parser.add_argument('--key', help='API key')
     parser.add_argument('--outdir', help='Directory to store data')
     parser.add_argument('--startdate', help='Startdate as YYYY-MM-DD')
     parser.add_argument('--enddate', help='Enddate as YYYY-MM-D')
@@ -49,12 +59,8 @@ def main(argv):
 
     #TODO: Change it that it get everything unless user sets start and end
 
-    if args.user is None:
-        args.user = hiit_collector.username
-    if args.password is None:
-        args.password = hiit_collector.password
-    if args.hostname is None:
-        args.hostname = hiit_collector.hostname
+    if args.key is None:
+        args.key = hiit_collector.api_key
     if args.startdate is None:
         startdate = datetime.datetime.now() #.strftime('%Y-%m-%d 00:00:00 utc')
     else:
@@ -81,15 +87,15 @@ def main(argv):
             print(startdate_str, enddate_str)
 
             # Get the data
-            response = fetch_data( args.user, args.password, args.hostname, startdate_str , enddate_str )
+            response = fetch_data( args.key, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database
             outfile = os.path.join('data/', 'incoming',
-                                   startdate_str.replace(' ', '_') + '.csv')
+                                   startdate_str.replace(' ', '_') + '.json')
             if not os.path.exists(os.path.dirname(outfile)):
                 os.makedirs(os.path.dirname(outfile))
-            open(outfile, 'w').write( response )
+            json.dump( response, open(outfile, 'w') )
 
 
 #

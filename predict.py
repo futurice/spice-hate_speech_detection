@@ -79,10 +79,10 @@ def main(argv):
     # Load HateWords counter
     hwd = HateWordDetector('data/vihasanat.txt')
 
-    filenames = glob.glob(os.path.join(args.inputdir, '*.csv'))
+    filenames = glob.glob(os.path.join(args.inputdir, '*.json'))
     for filename in filenames:
         # Load new messages
-        df = pd.read_csv(filename) #args.input)
+        df = pd.read_json(filename) #args.input)
         messages = df.text.tolist()
 
         # Extract features
