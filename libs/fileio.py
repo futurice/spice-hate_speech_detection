@@ -1,4 +1,10 @@
 import sys
+import glob
+import os
+
+import pandas as pd
+import numpy as np
+
 sys.path.append('confs/')
 sys.path.append('libs/')
 
@@ -28,3 +34,20 @@ def read_fasttext_train_file(filename):
             class_ids.append(classes.index(class_name))
             msgs.append(msg)
     return class_ids, msgs, classes
+
+def read_annotated_files(dirname):
+
+    messages = []
+    labels = np.zeros(0)
+
+    filenames = glob.glob(os.path.join(dirname, '*.xls*'))
+
+    for filename in filenames:
+        print('Reading %s' % filename)
+        
+        df = pd.read_excel(filename)
+        labels = np.hstack((labels, np.array(df[df.LABEL.notnull()].LABEL.tolist(),
+                           dtype=int)))
+        messages += df[df.LABEL.notnull()].text.tolist()
+
+    return messages, labels

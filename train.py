@@ -33,6 +33,7 @@ def main(argv):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='Input')
+    parser.add_argument('--annotations', help='Directory for annotated files (extends training material)', default='')
     parser.add_argument('--outputdir', help='Output directory', required=True)
     parser.add_argument('--featurename', help='Feature extraction name', required=True)
     parser.add_argument('--featurefile', help='Feature extraction file', required=True)
@@ -48,6 +49,14 @@ def main(argv):
     print('Loading training data')
     y, messages, classes = fileio.read_fasttext_train_file(args.input)
     y = np.array(y)
+
+    print(len(messages), y.shape)
+    if len(args.annotations) > 0:
+        newmessages, labels = fileio.read_annotated_files(args.annotations)
+        y = np.hstack((y, labels))
+        messages += newmessages
+
+    print(len(messages), y.shape)
 
     #TODO: We need to have BoW Features here too..
     # Load FastText textfeatures
