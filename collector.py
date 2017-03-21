@@ -81,13 +81,7 @@ def main(argv):
             print(startdate_str, enddate_str)
 
             # Get the data
-            url = 'http://' + args.user + ':' + args.password + '@' + args.hostname + '/tcat/api/querybin.php'
-            r = requests.get(url,
-                             params = {'resource': 'querybin/tweets',
-                                       'action' : 'tweet-export',
-                                       'startdate' : startdate_str,
-                                       'enddate' : enddate_str,
-                                       'bin' : 'Kuntavaalit' } )
+            response = fetch_data( args.user, args.password, args.hostname, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database
@@ -95,7 +89,7 @@ def main(argv):
                                    startdate_str.replace(' ', '_') + '.csv')
             if not os.path.exists(os.path.dirname(outfile)):
                 os.makedirs(os.path.dirname(outfile))
-            open(outfile, 'w').write(r.text)
+            open(outfile, 'w').write( response )
 
 
 #
