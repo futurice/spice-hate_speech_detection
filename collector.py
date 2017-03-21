@@ -17,16 +17,35 @@ import pandas as pd
 sys.path.append('confs')
 import hiit_collector
 
-def fetch_data(username, password, hostname, startdate, enddate):
+def fetch_data(username, password, hostname, paths, startdate, enddate):
 
-    url = 'http://' + username + ':' + password + '@' + hostname + '/tcat/api/querybin.php'
+    data = ''
+
+    url = 'http://' + username + ':' + password + '@' + hostname + '/' + paths[0][0]
     r = requests.get(url,
                      params = {'resource': 'querybin/tweets',
                                'action' : 'tweet-export',
                                'startdate' : startdate,
                                'enddate' : enddate,
-                               'bin' : 'Kuntavaalit' } )
-    return r.text
+                               'bin' : paths[0][1] } )
+
+    data += r.text
+
+
+    for path in paths[1:]:
+
+        print( path )
+
+        url = 'http://' + username + ':' + password + '@' + hostname + '/' + path[0]
+        r = requests.get(url,
+                         params = {'resource': 'querybin/tweets',
+                                   'action' : 'tweet-export',
+                                   'startdate' : startdate,
+                                   'enddate' : enddate,
+                                   'bin' : path[1] } )
+        data += '\n'.join(r.text.split('\n')[1:])
+
+    return data
 
 def store_messages(cvsstr, filename):
 
@@ -41,6 +60,7 @@ def main(argv):
     parser.add_argument('--user', help='Username')
     parser.add_argument('--password', help='Password')
     parser.add_argument('--hostname', help='Hostname')
+    parser.add_argument('--paths', help='list of paths and bin names')
     parser.add_argument('--outdir', help='Directory to store data')
     parser.add_argument('--startdate', help='Startdate as YYYY-MM-DD')
     parser.add_argument('--enddate', help='Enddate as YYYY-MM-D')
@@ -55,6 +75,8 @@ def main(argv):
         args.password = hiit_collector.password
     if args.hostname is None:
         args.hostname = hiit_collector.hostname
+    if args.paths is None:
+        args.paths = hiit_collector.paths
     if args.startdate is None:
         startdate = datetime.datetime.now() #.strftime('%Y-%m-%d 00:00:00 utc')
     else:
@@ -81,7 +103,7 @@ def main(argv):
             print(startdate_str, enddate_str)
 
             # Get the data
-            response = fetch_data( args.user, args.password, args.hostname, startdate_str , enddate_str )
+            response = fetch_data( args.user, args.password, args.hostname, args.paths, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database

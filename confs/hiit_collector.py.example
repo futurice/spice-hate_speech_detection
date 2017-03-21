@@ -1,3 +1,4 @@
 username = 'USERNAME'
 password = 'PASSWORD'
 hostname = 'HOSTNAME'
+paths = [('path', 'binname'), ('path', 'binname')]
