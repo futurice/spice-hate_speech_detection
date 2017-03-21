@@ -12,6 +12,7 @@ import datetime
 from calendar import monthrange
 import os
 import csv
+import json
 
 import pandas as pd
 
@@ -47,13 +48,20 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
         data += '\n'.join(r.text.split('\n')[1:])
 
 
-    data = csv.DictReader( StringIO.StringIO( data ) )
+    ## remove as much identification as possible
+    data = csv.DictReader( StringIO( data ) )
+    data = list( data )
 
-    keys = ['text', 'id', 'time']
+    data_cleaned = []
+    for d in data:
+        data_cleaned.append( {
+            'source' : 'twitter',
+            'id' : d['\ufeffid'],
+            'text' : d['text'],
+            'created_at' : d['created_at']
+        } )
 
-    print( data[0] )
-
-    return data
+    return data_cleaned
 
 def store_messages(cvsstr, filename):
 
@@ -116,10 +124,10 @@ def main(argv):
             # Store results
             # TODO: Store data to database
             outfile = os.path.join('data/', 'incoming',
-                                   startdate_str.replace(' ', '_') + '.csv')
+                                   startdate_str.replace(' ', '_') + '.json')
             if not os.path.exists(os.path.dirname(outfile)):
                 os.makedirs(os.path.dirname(outfile))
-            open(outfile, 'w').write( response )
+            json.dump( response, open(outfile, 'w') )
 
 
 #
