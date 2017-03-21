@@ -1,1 +1,3 @@
 api_key = 'FUTUSOME API KEY'
+candidate_gdocs = 'GDOCS URL'
+candidate_gdocs_keys = 'JSON PATH'

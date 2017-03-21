@@ -12,28 +12,50 @@ import datetime
 from calendar import monthrange
 import os
 import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 import pandas as pd
 
 sys.path.append('confs')
 import hiit_collector
 
-def fetch_data(api_key, startdate, enddate):
+def fetch_data(api_key, candidate_data_gdocs, gdocs_key, startdate, enddate):
 
     data = []
 
-    for candidate in ['NikoHat', 'matnel']:
+    credentials = ServiceAccountCredentials.from_json_keyfile_name( gdocs_key, ['https://spreadsheets.google.com/feeds'] )
+
+    gc = gspread.authorize(credentials)
+    sheet = gc.open_by_url( candidate_data_gdocs ).sheet1
+
+    candidates = sheet.get_all_records( True )
+
+    twitter = map( lambda x: x['twitter'].lower(), candidates )
+    twitter = filter( lambda x: x != 'na', twitter )
+
+    for candidate in twitter:
 
         params = {
             'api_search[query]' : 'type:twitter_tweet AND author:' + candidate,
-            'api_key' : api_key
+            'api_key' : api_key,
+            'api_search[limit]': 5000
         }
 
         url = 'https://api.futusome.com/api/searches.json'
 
-        r = requests.get(url, params )
+        print( params )
+        print( url )
 
-        data += r.json()['documents']
+        r = requests.get(url, params = params )
+
+        j = r.json()
+
+        if 'documents' in j: ## there can be a lot of errors
+
+            print( candidate, len( j['documents'] ) ) ## make easier to debug
+
+            data += j['documents']
 
     ## formulate back into CSV type of format
     data = map( lambda entry: entry['fields'] , data )
@@ -51,6 +73,8 @@ def main(argv):
     # Parse inputs
     parser = argparse.ArgumentParser()
     parser.add_argument('--key', help='API key')
+    parser.add_argument('--candidate_data', help='GDocs URL for data')
+    parser.add_argument('--google_keys', help='GDocs URL keys')
     parser.add_argument('--outdir', help='Directory to store data')
     parser.add_argument('--startdate', help='Startdate as YYYY-MM-DD')
     parser.add_argument('--enddate', help='Enddate as YYYY-MM-D')
@@ -61,6 +85,11 @@ def main(argv):
 
     if args.key is None:
         args.key = hiit_collector.api_key
+    if args.candidate_data is None:
+        args.candidate_data = hiit_collector.candidate_gdocs
+    if args.google_keys is None:
+        args.google_keys = hiit_collector.candidate_gdocs_keys
+
     if args.startdate is None:
         startdate = datetime.datetime.now() #.strftime('%Y-%m-%d 00:00:00 utc')
     else:
@@ -87,7 +116,7 @@ def main(argv):
             print(startdate_str, enddate_str)
 
             # Get the data
-            response = fetch_data( args.key, startdate_str , enddate_str )
+            response = fetch_data( args.key, args.candidate_data, args.google_keys, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database
