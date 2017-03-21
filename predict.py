@@ -81,8 +81,14 @@ def main(argv):
 
     filenames = glob.glob(os.path.join(args.inputdir, '*.csv'))
     for filename in filenames:
+
+        # Skip if messages have been predicted already
+        outputfile = os.path.join(args.outdir, os.path.basename(filename))
+        if os.path.exists(outputfile):
+            continue
+
         # Load new messages
-        df = pd.read_csv(filename) #args.input)
+        df = pd.read_csv(filename)
         messages = df.text.tolist()
 
         # Extract features
