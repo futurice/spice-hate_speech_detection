@@ -28,6 +28,12 @@ def main(argv):
     # Get a list of files to be converted
     filenames = glob.glob('data/output/*.csv')
     for filename in filenames:
+        # Skip existing files
+        outputfile = os.path.join(args.outdir,
+                                  '.'.join(os.path.basename(filename).split('.')[:1]) + '.xls')
+        if os.path.exists(outputfile):
+            continue
+            
         df = pd.read_csv(filename)
 
         # Sort the data

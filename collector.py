@@ -11,10 +11,14 @@ from io import StringIO
 import datetime
 from calendar import monthrange
 import os
+
 import csv
 import json
 import bs4
 import dateparser
+import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 import pandas as pd
 
@@ -95,6 +99,7 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
     data_cleaned_fb = []
 
+    ## remove identification when possible
     for d in data:
         msg = ''
         if 'message' in d:
@@ -130,6 +135,7 @@ def main(argv):
 
     #TODO: Change it that it get everything unless user sets start and end
 
+
     if args.user is None:
         args.user = hiit_collector.username
     if args.password is None:
@@ -164,7 +170,8 @@ def main(argv):
             print(startdate_str, enddate_str)
 
             # Get the data
-            response = fetch_data( args.user, args.password, args.hostname, args.paths, startdate_str , enddate_str )
+
+            response = fetch_data( args.user, args.password, args.hostname, args.path, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database

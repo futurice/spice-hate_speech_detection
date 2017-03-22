@@ -81,6 +81,12 @@ def main(argv):
 
     filenames = glob.glob(os.path.join(args.inputdir, '*.json'))
     for filename in filenames:
+
+        # Skip if messages have been predicted already
+        outputfile = os.path.join(args.outdir, os.path.basename(filename))
+        if os.path.exists(outputfile):
+            continue
+
         # Load new messages
         df = pd.read_json(filename) #args.input)
         messages = df.text.tolist()
