@@ -43,9 +43,6 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
     data += r.text
 
-    d = r.text.split('\n')[1:]
-    print( len( d )  )
-
     for path in paths[1:]:
 
         print( 'Collecting', path )
@@ -61,20 +58,27 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
         d = r.text.split('\n')[1:]
         data += '\n'.join( d )
 
-        print( len( d )  )
-
 
     ## remove as much identification as possible
     data = csv.DictReader( StringIO( data ) )
 
+    candidates = open('candidates_twitter_accounts.txt').readlines()
+    candidates = list( map( lambda x: x.strip().lower(), candidates ) )
+
     data_cleaned_twitter = []
     for d in data:
-        data_cleaned_twitter.append( {
-            'source' : 'twitter',
-            'id' : d['\ufeffid'],
-            'text' : d['text'],
-            'created_at' : d['created_at']
-        } )
+
+        ## only explore candidates!!!
+        if d['from_user_name'].lower() in candidates:
+
+            data_cleaned_twitter.append( {
+                'source' : 'twitter',
+                'id' : d['\ufeffid'],
+                'text' : d['text'],
+                'created_at' : d['created_at']
+            } )
+
+    print( 'Total', len( data_cleaned_twitter )  )
 
     ## facebook data collection
 
