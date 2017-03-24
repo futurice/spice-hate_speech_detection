@@ -31,6 +31,8 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
     data = ''
 
+    print( 'Collecting', paths[0] )
+
     url = 'http://' + username + ':' + password + '@' + hostname + '/' + paths[0][0]
     r = requests.get(url,
                      params = {'resource': 'querybin/tweets',
@@ -41,9 +43,12 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
     data += r.text
 
+    d = r.text.split('\n')[1:]
+    print( len( d )  )
+
     for path in paths[1:]:
 
-        print( path )
+        print( 'Collecting', path )
 
         url = 'http://' + username + ':' + password + '@' + hostname + '/' + path[0]
         r = requests.get(url,
@@ -52,8 +57,11 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
                                    'startdate' : startdate,
                                    'enddate' : enddate,
                                    'bin' : path[1] } )
-        print( r.text )
-        data += '\n'.join(r.text.split('\n')[1:])
+
+        d = r.text.split('\n')[1:]
+        data += '\n'.join( d )
+
+        print( len( d )  )
 
 
     ## remove as much identification as possible
@@ -87,13 +95,19 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
         if f.endswith('.json') and '_' not in f:
             try:
+                print( 'Collecting' , f )
                 r = requests.get( url + f )
                 r = r.json()
                 r = r['feed']
                 ## limit to selected dates
+
+                added = 0
                 for post in r:
                   if startdate <= dateparser.parse( post['created_time'] ) <= enddate:
                      data.append( post )
+                     added += 1
+
+                print( added )
 
             except Exception as e:
                 print("Failed with", f, "caused by", e)
@@ -130,7 +144,7 @@ def main(argv):
     parser.add_argument('--paths', help='list of paths and bin names')
     parser.add_argument('--outdir', help='Directory to store data')
     parser.add_argument('--startdate', help='Startdate as YYYY-MM-DD')
-    parser.add_argument('--enddate', help='Enddate as YYYY-MM-D')
+    parser.add_argument('--enddate', help='Enddate as YYYY-MM-DD')
 
     args = parser.parse_args(argv)
 
