@@ -41,7 +41,6 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
 
     data += r.text
 
-
     for path in paths[1:]:
 
         print( path )
@@ -53,12 +52,12 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
                                    'startdate' : startdate,
                                    'enddate' : enddate,
                                    'bin' : path[1] } )
+        print( r.text )
         data += '\n'.join(r.text.split('\n')[1:])
 
 
     ## remove as much identification as possible
     data = csv.DictReader( StringIO( data ) )
-    data = list( data )
 
     data_cleaned_twitter = []
     for d in data:
@@ -92,10 +91,12 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
                 r = r.json()
                 r = r['feed']
                 ## limit to selected dates
-                r = filter( lambda x: startdate <= parser.dateparser( d['created_time'] ) <= enddate, r )
-                data += r
-            except:
-                print("Failed with", f)
+                for post in r:
+                  if startdate <= dateparser.parse( post['created_time'] ) <= enddate:
+                     data.append( post )
+
+            except Exception as e:
+                print("Failed with", f, "caused by", e)
 
     data_cleaned_fb = []
 
@@ -171,7 +172,7 @@ def main(argv):
 
             # Get the data
 
-            response = fetch_data( args.user, args.password, args.hostname, args.path, startdate_str , enddate_str )
+            response = fetch_data( args.user, args.password, args.hostname, args.paths, startdate_str , enddate_str )
 
             # Store results
             # TODO: Store data to database
