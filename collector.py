@@ -7,7 +7,7 @@ This script predicts/detects hate speech for new messages
 import requests
 import argparse
 import sys
-from io import StringIO
+import io
 import datetime
 from calendar import monthrange
 import os
@@ -58,9 +58,11 @@ def fetch_data(username, password, hostname, paths, startdate, enddate):
         d = r.text.split('\n')[1:]
         data += '\n'.join( d )
 
+    ## fix characterset problems
+    data = data.replace('\x00', '')
 
     ## remove as much identification as possible
-    data = csv.DictReader( StringIO( data ) )
+    data = csv.DictReader( io.StringIO( data ) )
 
     candidates = open('candidates_twitter_accounts.txt').readlines()
     candidates = list( map( lambda x: x.strip().lower(), candidates ) )
