@@ -1,0 +1,9 @@
+#TODO: Fill these in and rename the file as postgre_keys.py
+username = 'USERNAME'
+password = 'PASSWORD'
+hostname = 'HOST'
+database = 'DATABASE'
+
+# This will be filled automatic i.e. dont touch
+connection_string = 'postgresql://' + username + ':' + password + '@' + \
+                    hostname + '/' + database
