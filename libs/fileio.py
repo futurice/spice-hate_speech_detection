@@ -43,11 +43,13 @@ def read_annotated_files(dirname):
     filenames = glob.glob(os.path.join(dirname, '*.xls*'))
 
     for filename in filenames:
-        print('Reading %s' % filename)
-        
+        print('Reading %s' % filename, end='. ', flush=True)
+
         df = pd.read_excel(filename)
+        print("Found %d new samples" % df[df.LABEL.notnull()].shape[0])
         labels = np.hstack((labels, np.array(df[df.LABEL.notnull()].LABEL.tolist(),
                            dtype=int)))
         messages += df[df.LABEL.notnull()].text.tolist()
+
 
     return messages, labels

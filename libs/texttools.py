@@ -62,9 +62,10 @@ def stemming_messages_snowball(messages, stemmings_to_words=dict()):
     for message in messages:
         try:
             stemmed_message, stemmings_to_words = stemming_message_snowball(message, stemmings_to_words)
-            stemmed_messages.append(stemmed_message)
         except:
+            stemmed_message = 'nan'
             print('Failed! %s' % (message))
+        stemmed_messages.append(stemmed_message)
 
     return stemmed_messages, stemmings_to_words
 

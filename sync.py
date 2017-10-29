@@ -35,8 +35,8 @@ def main(argv):
     for sh in spreadsheets:
         synced_sheets.append(sh.title)
         headers = sh.sheet1.row_values(1)
-        annotations = sh.sheet1.col_values(headers.index('hatespeech_label') + 1)
-        message_ids = sh.sheet1.col_values(headers.index('id') + 1)
+        #annotations = sh.sheet1.col_values(headers.index('LABEL') + 1)
+        #message_ids = sh.sheet1.col_values(headers.index('id') + 1)
         # TODO: Write the logic to update local storage
 
     # Sync missing files to Google Drive

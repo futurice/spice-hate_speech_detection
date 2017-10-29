@@ -83,7 +83,7 @@ def main(argv):
     for filename in filenames:
 
         # Skip if messages have been predicted already
-        outputfile = os.path.join(args.outdir, os.path.basename(filename))
+        outputfile = os.path.join(args.outdir, os.path.basename(filename).replace('json','csv'))
         if os.path.exists(outputfile):
             continue
 
@@ -111,7 +111,6 @@ def main(argv):
         df['prediced_score'] = score
 
         # Store result
-        outputfile = os.path.join(args.outdir, os.path.basename(filename))
         if (len(os.path.dirname(outputfile)) > 0) and (not os.path.exists(os.path.dirname(outputfile))):
             os.makedirs(os.path.dirname(outputfile))
         print('Storing results to %s' % outputfile)

@@ -47,7 +47,7 @@ def run_kfold_test(clf, x, y, k=10):
         test_trp = cm[1, 1] / np.sum(cm[1, :])
 
         print(train_acc, train_f1, train_trp, test_acc, test_f1, test_trp, sep='\t')
-        results.append([train_acc, train_f1, train_trp, test_acc, test_f1, test_trp])
+        results.append([train_acc, train_f1, train_trp, test_acc, test_f1, test_trp, clf])
 
     result = np.array(results)
     return results
